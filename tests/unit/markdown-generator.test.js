@@ -1,14 +1,14 @@
 import { generateJobsMarkdown } from "../../src/markdown-generator.js";
 
 const baseCompany = {
-  id: "33159615",
-  company: "EPAM SYSTEMS INTERNATIONAL SRL",
-  brand: "EPAM",
+  id: "36734466",
+  company: "SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA",
+  brand: "SMEDIX",
   status: "activ",
-  location: ["București"],
-  website: ["https://www.epam.com"],
-  career: ["https://careers.epam.com"],
-  lastScraped: "2026-06-17"
+  location: ["Cluj-Napoca"],
+  website: ["https://www.perficient.com"],
+  career: ["https://careers.perficient.com"],
+  lastScraped: "2026-07-23"
 };
 
 const baseJob = {
@@ -24,17 +24,17 @@ describe("generateJobsMarkdown", () => {
   describe("company section", () => {
     it("includes company name as h1", () => {
       const md = generateJobsMarkdown(baseCompany, []);
-      expect(md).toContain("# EPAM SYSTEMS INTERNATIONAL SRL");
+      expect(md).toContain("# SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA");
     });
 
     it("includes CIF", () => {
       const md = generateJobsMarkdown(baseCompany, []);
-      expect(md).toContain("33159615");
+      expect(md).toContain("36734466");
     });
 
     it("includes brand", () => {
       const md = generateJobsMarkdown(baseCompany, []);
-      expect(md).toContain("EPAM");
+      expect(md).toContain("SMEDIX");
     });
 
     it("includes status", () => {
@@ -58,9 +58,9 @@ describe("generateJobsMarkdown", () => {
     });
 
     it("omits optional fields when not present", () => {
-      const minimal = { id: "33159615", company: "EPAM SYSTEMS INTERNATIONAL SRL" };
+      const minimal = { id: "36734466", company: "SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA" };
       const md = generateJobsMarkdown(minimal, []);
-      expect(md).toContain("# EPAM SYSTEMS INTERNATIONAL SRL");
+      expect(md).toContain("# SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA");
       expect(md).not.toContain("Brand");
       expect(md).not.toContain("Last Scraped");
     });

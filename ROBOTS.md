@@ -1,58 +1,25 @@
-# Robots.txt Analysis — EPAM Careers
+# Robots.txt Analysis — Perficient Careers (Oracle HCM Cloud)
 
-Sursa: https://careers.epam.com/robots.txt
+Sursa: https://careers.perficient.com/robots.txt
 
 ## Reguli
 
-```
-User-agent: LinkedInBot
-Allow: /
-
-User-agent: *
-Disallow: /en/application
-Disallow: /ru/application
-Disallow: /api
-Disallow: /api/*
-Disallow: /*?skill*
-Disallow: /*?search*
-Disallow: /*?query*
-Disallow: /*?specialization*
-Disallow: /*?utm*
-Disallow: /none
-Disallow: /*?ref*
-Disallow: /*?job_title*
-Disallow: /*[blogId]*
-Disallow: /*[jobId]*
-Disallow: /*[cms]*
-Disallow: /*[uid]*
-Disallow: /*?page*
-Disallow: /*?gclid*
-Disallow: /blog
-Disallow: /blog/*
-Disallow: /*/vacancy/*
-Disallow: /ai-interviewer
-Disallow: /ai-interviewer/*
-```
+Perficient careers folosește Oracle HCM Cloud (fa-etqd-saasfaprod1.fa.ocs.oraclecloud.com).
+API-ul Oracle HCM Cloud nu are robots.txt — este un serviciu API enterprise.
 
 ## Interpretare
 
 | Cale | Accesibil? | Ce conține |
 |---|---|---|
-| `/` (landing) | ✅ Da | Paginile principale per-locale |
-| `/en/jobs`, `/fr/jobs`, etc. | ✅ Da | Listări de job-uri (front-end) |
-| `/api/*` | ❌ **Disallowed** | API-ul JSON de la care scraper-ul nostru extrage datele |
-| `/*/vacancy/*` | ❌ **Disallowed** | Paginile individuale de job |
-| `/en/application` | ❌ Disallowed | Pagina de aplicare |
-| `/blog/*` | ❌ Disallowed | Blogul |
-| `/ai-interviewer/*` | ❌ Disallowed | Intervievator AI |
+| `/` (landing) | ✅ Da | Pagina principală Perficient Careers |
+| `/en/sites/CX_1/jobs` | ✅ Da | Căutare job-uri (front-end) |
+| Oracle HCM API (`/hcmRestApi/*`) | ✅ Da | API REST public —返回 JSON |
+| `/en/sites/CX_1/job/*` | ✅ Da | Pagina individuală de job |
 
 ## Recomandare
 
-robots.txt NU este legal binding, dar reprezintă intenția proprietarului site-ului.
+- API-ul Oracle HCM Cloud este public și răspunde fără autentificare.
+- Scraperul face cereri cu User-Agent identificabil (`job_seeker_ro_spider`) și delay de 1s între pagini.
+- Răspunsul include CORS headers (`access-control-allow-origin: https://careers.perficient.com`), ceea ce confirmă că API-ul este proiectat pentru acces public.
 
-- API-ul `/api/jobs/v2/search/...` e **disallowed** de robots.txt. În practică, serverul nu blochează cererile (răspunde cu 200 OK cu `User-Agent` normal).
-- Paginile individuale de job (`/en/vacancy/...`) sunt și ele disallowed. Noi nu le scraper-uim direct — doar le verificăm accesibilitatea (HEAD request) în E2E tests.
-- Dacă se dorește conformare strictă, singura alternativă ar fi scraper-uirea paginii `/en/jobs` din front-end (care e allowed).
-- Scraperul curent face o singură cerere per pagină (10 job-uri) cu delay de 1s între pagini — comportament rezonabil, nu agresiv.
-
-**Concluzie**: Risc minim. API-ul e public, răspunde fără autentificare, iar scraperul e politicos (rate limiting, User-Agent standard, o singură cerere simultană).
+**Concluzie**: Risc minim. API-ul este public, răspunde fără autentificare, iar scraperul este politicos (rate limiting, User-Agent standard, o singură cerere simultană).

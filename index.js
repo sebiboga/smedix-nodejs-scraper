@@ -1,9 +1,9 @@
 /**
- * EPAM Job Scraper - Main Entry Point
+ * SMEDIX (Perficient) Job Scraper - Main Entry Point
  * 
- * PURPOSE: Scrapes job listings from EPAM Careers Romania API and stores them in Solr.
- * This is the primary orchestrator that coordinates company validation, job scraping,
- * data transformation, and Solr storage.
+ * PURPOSE: Scrapes job listings from Perficient/SMEDIX Oracle HCM Cloud API
+ * and stores them in Solr. SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA (CIF: 36734466)
+ * is now part of Perficient, Inc. Their careers page uses Oracle HCM Cloud.
  */
 
 import fetch from "node-fetch";
@@ -19,14 +19,14 @@ import companyConfig from "./config/company.js";
 // ============================================================================
 
 const COMPANY_CIF = companyConfig.cif;
-const JOB_BASE = companyConfig.apiBase;
-const ROMANIA_COUNTRY_ID = companyConfig.apiCountryId;
+const API_BASE = companyConfig.apiBase;
+const SITE_NUMBER = companyConfig.apiSiteNumber;
 
-// Request timeout in milliseconds (10 seconds)
-const TIMEOUT = 10000;
+// Request timeout in milliseconds (15 seconds — Oracle API can be slow)
+const TIMEOUT = 15000;
 
 // Number of jobs to fetch per API page request
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 100;
 
 // Global variable to store company name after validation
 let COMPANY_NAME = null;
@@ -43,7 +43,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Searches ANOFM (Agentia Nationala pentru Ocuparea Fortei de Munca) for
- * job listings belonging to the given company CIF. Uses the public ANOFM API.
+ * job listings belonging to the given company CIF.
  * @param {string} cif - Company CIF
  * @returns {Promise<Array>} - Array of job objects { url, title, location, source }
  */
@@ -89,87 +89,126 @@ async function searchANOFM(cif) {
 }
 
 // ============================================================================
-// API FUNCTIONS - Fetching data from EPAM Careers
+// API FUNCTIONS - Fetching data from Perficient Oracle HCM Cloud
 // ============================================================================
 
 /**
- * Fetches a single page of jobs from EPAM Careers API
- * @param {number} pageNum - Page number (1-indexed)
+ * Fetches a single page of jobs from Perficient Oracle HCM Cloud API
+ * @param {number} offset - Offset for pagination (0-based)
  * @returns {Promise<Object>} - API response with job data
  */
-async function fetchJobsPage(pageNum) {
-  // Calculate offset for pagination (API uses 0-based indexing)
-  const from = (pageNum - 1) * PAGE_SIZE;
-  
-  // Build EPAM API URL with filters for Romania jobs only
-  const url = `https://careers.epam.com/api/jobs/v2/search/careers-i18n?from=${from}&lang=en&size=${PAGE_SIZE}&sortBy=relevance%3Brelocation%3Dasc&websiteLocale=en-us&facets=country%3D${ROMANIA_COUNTRY_ID}`;
-  
+async function fetchJobsPage(offset) {
+  const url = `${API_BASE}/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.workLocation,requisitionList.otherWorkLocations,requisitionList.secondaryLocations&finder=findReqs;siteNumber=${SITE_NUMBER},facetsList=LOCATIONS%3BWORK_LOCATIONS%3BWORKPLACE_TYPES%3BTITLES%3BCATEGORIES%3BORGANIZATIONS%3BPOSTING_DATES%3BFLEX_FIELDS,limit=${PAGE_SIZE},offset=${offset},sortBy=POSTING_DATES_DESC`;
+
   const res = await fetch(url, {
+    timeout: TIMEOUT,
     headers: {
       "User-Agent": "job_seeker_ro_spider",
-      "Accept": "application/json"
+      "Accept": "application/vnd.oracle.adf.resourceitem+json;charset=utf-8",
+      "Content-Type": "application/vnd.oracle.adf.resourceitem+json;charset=utf-8",
+      "ora-irc-language": "en"
     }
   });
-  
+
   if (!res.ok) {
-    throw new Error(`API error ${res.status} for page=${pageNum}`);
+    throw new Error(`Oracle HCM API error ${res.status} for offset=${offset}`);
   }
-  
+
   const data = await res.json();
   return data;
 }
 
 // ============================================================================
-// DATA PARSING - Converting API response to our job model
+// DATA PARSING - Converting Oracle HCM response to our job model
 // ============================================================================
 
 /**
- * Parses raw API response into our standardized job format
- * @param {Object} apiData - Raw response from EPAM API
+ * Parses raw Oracle HCM API response into our standardized job format.
+ * Only includes jobs located in Romania (country code "RO").
+ * @param {Object} apiData - Raw response from Oracle HCM API
  * @returns {Object} - Object containing jobs array and total count
  */
 function parseApiJobs(apiData) {
-  // Extract jobs array from API response (handle missing data gracefully)
-  const jobs = apiData.data?.jobs || [];
-  const total = apiData.data?.total || 0;
-  
-  return {
-    jobs: jobs.map(job => {
-      // Determine work mode based on vacancy type
-      // Maps EPAM's vacancy_type to our standardized: remote, on-site, or hybrid
-      const vacancyType = job.vacancy_type || "Hybrid";
-      let workmode = "hybrid";
-      if (vacancyType.toLowerCase().includes("remote")) workmode = "remote";
-      else if (vacancyType.toLowerCase().includes("office")) workmode = "on-site";
-      
-      // Extract location - prefer city names, fallback to country
-      const location = [];
-      if (job.city && job.city.length > 0) {
-        for (const c of job.city) {
-          if (c.name) location.push(c.name);
-        }
-      } else if (job.country?.[0]?.name) {
-        location.push(job.country[0].name);
+  const items = apiData.items || [];
+  const searchResult = items[0] || {};
+  const total = searchResult.TotalJobsCount || 0;
+  const requisitionList = searchResult.requisitionList || [];
+
+  const romaniaJobs = [];
+
+  for (const job of requisitionList) {
+    // Check if job is in Romania
+    const isRomania = job.PrimaryLocationCountry === "RO";
+    const locStr = job.PrimaryLocation || "";
+    const isRomaniaLoc = locStr.includes("Romania") || locStr.includes("Cluj");
+    
+    // Also check secondary locations
+    const secLocs = job.secondaryLocations || [];
+    const hasRomaniaSecondary = secLocs.some(s => 
+      s.CountryCode === "RO" || 
+      (s.Name && (s.Name.includes("Romania") || s.Name.includes("Cluj")))
+    );
+
+    // Check work locations
+    const workLocs = job.workLocation || [];
+    const hasRomaniaWork = workLocs.some(w => 
+      w.Country === "RO" || 
+      (w.TownOrCity && w.TownOrCity.includes("Cluj"))
+    );
+
+    if (!isRomania && !isRomaniaLoc && !hasRomaniaSecondary && !hasRomaniaWork) {
+      continue; // Skip non-Romania jobs
+    }
+
+    // Determine work mode from workplace type
+    let workmode = "hybrid";
+    const wpType = (job.WorkplaceType || "").toLowerCase();
+    if (wpType.includes("remote")) workmode = "remote";
+    else if (wpType.includes("office") || wpType.includes("onsite")) workmode = "on-site";
+
+    // Extract location from work locations or primary location
+    const location = [];
+    if (workLocs.length > 0) {
+      for (const wl of workLocs) {
+        if (wl.TownOrCity) location.push(wl.TownOrCity);
       }
-      
-      // Build job URL - use SEO URL if available, otherwise construct from UID
-      const uid = job.uid || "";
-      const seoUrl = job.seo?.url || `/en/vacancy/${uid}_en`;
-      const url = seoUrl.startsWith('http') ? seoUrl : `${JOB_BASE}${seoUrl}`;
-      
-      // Normalize skill tags to lowercase for consistency
-      const tags = (job.skills || []).map(s => s.toLowerCase());
-      
-      // Return standardized job object
-      return {
-        url,
-        title: job.name,
-        uid: job.uid,
-        workmode,
-        location,
-        tags
-      };
-    }),
+    }
+    if (location.length === 0 && secLocs.length > 0) {
+      for (const sl of secLocs) {
+        if (sl.Name) {
+          const city = sl.Name.split(",")[0].trim();
+          if (city) location.push(city);
+        }
+      }
+    }
+    if (location.length === 0 && locStr) {
+      const city = locStr.split(",")[0].trim();
+      if (city) location.push(city);
+    }
+
+    // Build job URL — Oracle HCM job detail page
+    const url = `https://careers.perficient.com/en/sites/CX_1/job/${job.Id}`;
+
+    // Extract tags from short description (basic keyword extraction)
+    const tags = [];
+    const desc = (job.ShortDescriptionStr || "").toLowerCase();
+    const techKeywords = [".net", "java", "angular", "react", "python", "sql", "aws", "azure", "docker", "kubernetes", "spring", "node", "typescript", "javascript", "c#", "php", "ruby", "go", "rust", "devops", "ci/cd", "agile", "scrum", "qa", "testing", "automation", "security", "cloud", "data", "ai", "machine learning", "ml"];
+    for (const kw of techKeywords) {
+      if (desc.includes(kw)) tags.push(kw);
+    }
+
+    romaniaJobs.push({
+      url,
+      title: job.Title,
+      uid: job.Id,
+      workmode,
+      location,
+      tags
+    });
+  }
+
+  return {
+    jobs: romaniaJobs,
     total
   };
 }
@@ -179,37 +218,33 @@ function parseApiJobs(apiData) {
 // ============================================================================
 
 /**
- * Scrapes all job listings from EPAM by iterating through paginated API responses
+ * Scrapes all Romania job listings from Perficient by iterating through paginated API responses
  * @param {boolean} testOnlyOnePage - If true, stops after first page (for testing)
  * @returns {Promise<Array>} - Array of unique job objects
  */
 async function scrapeAllListings(testOnlyOnePage = false) {
   const allJobs = [];
-  const seenUrls = new Set(); // Track seen URLs to avoid duplicates
-  let page = 1;
+  const seenUrls = new Set();
+  let offset = 0;
   let totalJobs = 0;
-  const MAX_PAGES = 10; // Safety limit to prevent infinite loops
+  const MAX_PAGES = 10;
 
-  // Paginate through all job listings
   while (true) {
-    console.log(`Fetching API page: ${page}`);
-    const data = await fetchJobsPage(page);
+    console.log(`Fetching API offset: ${offset}`);
+    const data = await fetchJobsPage(offset);
     const result = parseApiJobs(data);
     const jobs = result.jobs;
 
-    // Stop if no jobs found on this page
-    if (!jobs.length) {
-      console.log(`No jobs found on page ${page}, stopping.`);
-      break;
-    }
-
-    // Capture total count from first page response
-    if (page === 1) {
+    if (offset === 0) {
       totalJobs = result.total;
       console.log(`Total jobs on site: ${totalJobs}`);
     }
 
-    // Collect unique jobs (avoid duplicates across pages)
+    if (!jobs.length && offset > 0) {
+      console.log(`No more Romania jobs found at offset ${offset}, stopping.`);
+      break;
+    }
+
     let newJobs = 0;
     for (const job of jobs) {
       if (!seenUrls.has(job.url)) {
@@ -218,31 +253,28 @@ async function scrapeAllListings(testOnlyOnePage = false) {
         newJobs++;
       }
     }
-    console.log(`Page ${page}: ${jobs.length} jobs, ${newJobs} new (total: ${allJobs.length})`);
+    console.log(`Offset ${offset}: ${jobs.length} Romania jobs, ${newJobs} new (total: ${allJobs.length})`);
 
-    // Test mode: stop after first page
     if (testOnlyOnePage) {
       console.log("Test mode: stopping after page 1.");
       break;
     }
 
-    // Safety: stop after max pages
-    if (page >= MAX_PAGES) {
-      console.log(`Max pages (${MAX_PAGES}) reached, stopping.`);
+    if (offset >= MAX_PAGES * PAGE_SIZE) {
+      console.log(`Max offset reached, stopping.`);
       break;
     }
 
-    // Stop if no new jobs (we've seen everything)
-    if (newJobs === 0) {
-      console.log(`No new jobs on page ${page}, stopping.`);
+    if (newJobs === 0 && offset > 0) {
+      console.log(`No new jobs at offset ${offset}, stopping.`);
       break;
     }
 
-    page += 1;
-    await sleep(1000); // Respectful delay between pages
+    offset += PAGE_SIZE;
+    await sleep(1000);
   }
 
-  console.log(`Total unique jobs collected: ${allJobs.length}`);
+  console.log(`Total unique Romania jobs collected: ${allJobs.length}`);
   return allJobs;
 }
 
@@ -272,7 +304,6 @@ function mapToJobModel(rawJob, cif, companyName = COMPANY_NAME) {
     status: "scraped"
   };
 
-  // Remove undefined fields to keep payload clean
   Object.keys(job).forEach((k) => job[k] === undefined && delete job[k]);
 
   return job;
@@ -280,15 +311,10 @@ function mapToJobModel(rawJob, cif, companyName = COMPANY_NAME) {
 
 /**
  * Transforms jobs to match Solr schema and filters for Romanian locations
- * - Ensures company name is uppercase
- * - Filters locations to only Romanian cities
- * - Normalizes work mode values
  * @param {Object} payload - Job payload with jobs array
  * @returns {Object} - Transformed payload ready for Solr
  */
 function transformJobsForSOLR(payload) {
-  // List of Romanian cities for location validation
-  // Includes both Romanian and English spellings with diacritics
   const romanianCities = [
     'Bucharest', 'București', 'Cluj-Napoca', 'Cluj Napoca',
     'Timișoara', 'Timisoara', 'Iași', 'Iasi', 'Brașov', 'Brasov',
@@ -303,14 +329,8 @@ function transformJobsForSOLR(payload) {
     'Chitila', 'Mogoșoaia', 'Mogosoaia', 'Otopeni'
   ];
 
-  // Create lookup set for O(1) city validation
   const citySet = new Set(romanianCities.map(c => c.toLowerCase()));
 
-  /**
-   * Normalizes work mode strings to standard values
-   * @param {string} wm - Raw work mode string
-   * @returns {string|undefined} - Normalized work mode
-   */
   const normalizeWorkmode = (wm) => {
     if (!wm) return undefined;
     const lower = wm.toLowerCase();
@@ -319,13 +339,10 @@ function transformJobsForSOLR(payload) {
     return 'hybrid';
   };
 
-  // Transform the payload
   const transformed = {
     ...payload,
-    company: payload.company?.toUpperCase(), // Solr convention: uppercase company names
+    company: payload.company?.toUpperCase(),
     jobs: payload.jobs.map(job => {
-      // Filter locations to only include valid Romanian cities
-      // Also accept generic "Romania" or "România" as valid
       const validLocations = (job.location || []).filter(loc => {
         const lower = loc.toLowerCase().trim();
         if (lower === 'romania' || lower === 'românia') return true;
@@ -334,7 +351,7 @@ function transformJobsForSOLR(payload) {
 
       return {
         ...job,
-        location: validLocations.length > 0 ? validLocations : ['România'], // Default to Romania if no city match
+        location: validLocations.length > 0 ? validLocations : ['România'],
         workmode: normalizeWorkmode(job.workmode)
       };
     })
@@ -344,39 +361,25 @@ function transformJobsForSOLR(payload) {
 }
 
 // ============================================================================
-// MAIN ORCHESTRATION - Coordinates the entire scraping workflow
+// MAIN ORCHESTRATION
 // ============================================================================
 
-/**
- * Main function that orchestrates the complete scraping workflow:
- * 1. Check existing jobs in Solr
- * 2. Validate company via ANAF
- * 3. Scrape jobs from EPAM API
- * 4. Transform data for Solr
- * 5. Upsert jobs to Solr
- * 6. Report summary
- */
 async function main() {
-  // Check for --test flag to run in test mode (single page only)
   const testOnlyOnePage = process.argv.includes("--test");
   
   try {
-    // Ensure tmp/ directory exists (for jobs.json and company.json backups)
     fs.mkdirSync("tmp", { recursive: true });
-    // Step 1: Get count of existing jobs in Solr for comparison
+
     console.log("=== Step 1: Get existing jobs count ===");
     const existingResult = await querySOLR(COMPANY_CIF);
     const existingCount = existingResult.numFound;
     console.log(`Found ${existingCount} existing jobs in SOLR`);
-    console.log("(Keeping existing jobs - will upsert EPAM Careers jobs only)");
 
-    // Step 2: Validate company data via ANAF (ensures we have correct company info)
     console.log("=== Step 2: Validate company via ANAF ===");
     const { company, cif, address } = await validateAndGetCompany();
     COMPANY_NAME = company;
     const localCif = cif;
 
-    // Upsert company to SOLR company core with full address from ANAF
     try {
       await upsertCompany({
         id: cif,
@@ -393,12 +396,10 @@ async function main() {
       console.log(`Note: Could not upsert company to SOLR core: ${err.message}`);
     }
     
-    // Step 3: Scrape all jobs from EPAM Careers API
     const rawJobs = await scrapeAllListings(testOnlyOnePage);
     const scrapedCount = rawJobs.length;
-    console.log(`📊 Jobs scraped from EPAM Careers website: ${scrapedCount}`);
+    console.log(`Jobs scraped from Perficient Careers: ${scrapedCount}`);
 
-    // Step 3b: Also scrape ANOFM jobs for this CIF
     if (!testOnlyOnePage) {
       const anofmJobs = await searchANOFM(localCif);
       const anofmCount = anofmJobs.length;
@@ -407,32 +408,27 @@ async function main() {
           rawJobs.push(job);
         }
       }
-      console.log(`📊 Jobs added from ANOFM: ${anofmCount}`);
+      console.log(`Jobs added from ANOFM: ${anofmCount}`);
     }
 
-    // Step 4: Map raw jobs to Solr model with CIF and company name
     const jobs = rawJobs.map(job => mapToJobModel(job, localCif));
 
-    // Create payload with metadata
     const payload = {
-      source: "epam.com",
+      source: "careers.perficient.com",
       scrapedAt: new Date().toISOString(),
       company: COMPANY_NAME,
       cif: localCif,
       jobs
     };
 
-    // Step 5: Transform jobs (filter locations, normalize values)
     console.log("Transforming jobs for SOLR...");
     const transformedPayload = transformJobsForSOLR(payload);
     const validCount = transformedPayload.jobs.filter(j => j.location).length;
-    console.log(`📊 Jobs with valid Romanian locations: ${validCount}`);
+    console.log(`Jobs with valid Romanian locations: ${validCount}`);
 
-    // Save transformed jobs to file (for debugging/backup)
     fs.writeFileSync("tmp/jobs.json", JSON.stringify(transformedPayload, null, 2), "utf-8");
     console.log("Saved tmp/jobs.json");
 
-    // Generate and save docs/jobs.md
     const companyData = {
       id: localCif,
       company: transformedPayload.company,
@@ -448,20 +444,17 @@ async function main() {
     fs.writeFileSync("docs/jobs.md", markdown, "utf-8");
     console.log("Saved docs/jobs.md");
 
-    // Publish a copy of company config for the static HTML to consume
     fs.writeFileSync("docs/company.json", JSON.stringify(companyConfig, null, 2), "utf-8");
     console.log("Saved docs/company.json");
 
-    // Step 6: Upsert all jobs to Solr (add/update)
     console.log("\n=== Step 6: Upsert jobs to SOLR ===");
     await upsertJobs(transformedPayload.jobs);
 
-    // Step 7: Verify final count in Solr
     const finalResult = await querySOLR(COMPANY_CIF);
-    console.log(`\n📊 === SUMMARY ===`);
-    console.log(`📊 Jobs existing in SOLR before scrape: ${existingCount}`);
-    console.log(`📊 Jobs scraped from EPAM website: ${scrapedCount}`);
-    console.log(`📊 Jobs in SOLR after scrape: ${finalResult.numFound}`);
+    console.log(`\n=== SUMMARY ===`);
+    console.log(`Jobs existing in SOLR before scrape: ${existingCount}`);
+    console.log(`Jobs scraped from Perficient website: ${scrapedCount}`);
+    console.log(`Jobs in SOLR after scrape: ${finalResult.numFound}`);
     console.log(`====================`);
 
     console.log("\n=== DONE ===");
@@ -473,10 +466,8 @@ async function main() {
   }
 }
 
-// Export functions for testing
 export { parseApiJobs, mapToJobModel, transformJobsForSOLR };
 
-// Run main function when executed directly
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main();
 }

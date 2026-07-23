@@ -1,10 +1,10 @@
 {
   "validatedAt": "2026-04-13T11:09:40.321Z",
   "source": "ANAF",
-  "brand": "EPAM",
+  "brand": "SMEDIX",
   "anaf": {
-    "cui": 33159615,
-    "name": "EPAM SYSTEMS INTERNATIONAL SRL",
+    "cui": 36734466,
+    "name": "SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA",
     "address": "MUNICIPIUL BUCUREŞTI, SECTOR 1, BLD IANCU DE HUNEDOARA, NR.48, ET.9",
     "registrationNumber": "J2014005735405",
     "phone": "",
@@ -68,10 +68,10 @@
     "onrcStatusLabel": "Funcțiune"
   },
   "peviitor": {
-    "id": "33159615",
-    "company": "EPAM SYSTEMS INTERNATIONAL SRL",
-    "brand": "EPAM",
-    "group": "EPAM Systems",
+    "id": "36734466",
+    "company": "SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA",
+    "brand": "SMEDIX",
+    "group": "SMEDIX",
     "status": "activ",
     "website": [
       "https://www.epam.com"
@@ -82,11 +82,11 @@
     "lastScraped": "2026-04-12",
     "scraperFile": "epam.md",
     "_version_": 1862291263324160000,
-    "_root_": "33159615"
+    "_root_": "36734466"
   },
   "summary": {
-    "company": "EPAM SYSTEMS INTERNATIONAL SRL",
-    "cif": "33159615",
+    "company": "SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA",
+    "cif": "36734466",
     "active": true,
     "inactiveSince": "2018-12-27",
     "reactivatedSince": "2020-05-13",

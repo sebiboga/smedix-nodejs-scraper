@@ -14,7 +14,7 @@ function repoUrl(apiPath) {
 }
 
 async function ghFetch(url) {
-  const headers = { Accept: "application/vnd.github.v3+json", "User-Agent": "jest-test" };
+  const headers = { Accept: "application/vnd.github.v3+json", User-Agent: "jest-test" };
   if (TOKEN) headers.Authorization = `token ${TOKEN}`;
   const res = await fetch(url, { headers });
   return res;
@@ -36,7 +36,7 @@ describe("Repository Configuration", () => {
       expect(res.ok).toBe(true);
       const data = await res.json();
       expect(data.default_branch).toBe("main");
-      console.log(`✅ Default branch: ${data.default_branch}`);
+      console.log(`Default branch: ${data.default_branch}`);
     });
   });
 
@@ -48,10 +48,8 @@ describe("Repository Configuration", () => {
       const data = await res.json();
       expect(data.homepage).toBeTruthy();
       expect(data.homepage).toMatch(/^https?:\/\//);
-      console.log(`✅ GitHub Pages URL: ${data.homepage}`);
+      console.log(`GitHub Pages URL: ${data.homepage}`);
     });
-
-    // deploy.yml removed — legacy GitHub Pages auto-deploys from docs/
   });
 
   describe("hosted HTML page", () => {
@@ -69,15 +67,15 @@ describe("Repository Configuration", () => {
         headers: { "User-Agent": "jest-test" },
       });
       if (!res.ok) {
-        console.log(`⚠️ GitHub Pages returned ${res.status} — may not be deployed yet`);
+        console.log(`GitHub Pages returned ${res.status} — may not be deployed yet`);
         return;
       }
 
       const html = await res.text();
       expect(html).toContain("<!DOCTYPE html>");
       expect(html).toContain("peviitor");
-      expect(html).toContain("EPAM");
-      console.log(`✅ GitHub Pages HTML loaded from ${pagesUrl}`);
+      expect(html).toContain("SMEDIX");
+      console.log(`GitHub Pages HTML loaded from ${pagesUrl}`);
     });
   });
 
@@ -88,7 +86,7 @@ describe("Repository Configuration", () => {
         return;
       }
       expect(process.env.SOLR_AUTH).toBeTruthy();
-      console.log("✅ SOLR_AUTH is set");
+      console.log("SOLR_AUTH is set");
     });
   });
 
@@ -100,7 +98,7 @@ describe("Repository Configuration", () => {
       expect(content).toContain("name: Oportunitati SI Cariere");
       expect(content).toContain("schedule");
       expect(content).toContain("workflow_dispatch");
-      console.log(`✅ ${SCRAPER_YML} exists with expected content`);
+      console.log(`${SCRAPER_YML} exists with expected content`);
     });
   });
 });

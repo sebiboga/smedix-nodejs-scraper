@@ -1,19 +1,19 @@
-# job_seeker_ro_spider — EPAM Careers Romania Scraper
+# job_seeker_ro_spider — SMEDIX (Perficient) Romania Scraper
 
-[![Oportunitati SI Cariere](https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml/badge.svg)](https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml)
-[![Automation Tests](https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/actions/workflows/automation-testing.yml/badge.svg)](https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/actions/workflows/automation-testing.yml)
+[![Oportunitati SI Cariere](https://github.com/sebiboga/smedix-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml/badge.svg)](https://github.com/sebiboga/smedix-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml)
+[![Automation Tests](https://github.com/sebiboga/smedix-nodejs-scraper/actions/workflows/automation-testing.yml/badge.svg)](https://github.com/sebiboga/smedix-nodejs-scraper/actions/workflows/automation-testing.yml)
 
-[![Version](https://img.shields.io/github/package-json/v/sebiboga/epam-systems-international-srl-nodejs-scraper?label=version&color=blue)](CHANGELOG.md)
-[![Test Results](https://img.shields.io/badge/test--results-HTML-9b59b6)](https://sebiboga.github.io/epam-systems-international-srl-nodejs-scraper/test-results/)
+[![Version](https://img.shields.io/github/package-json/v/sebiboga/smedix-nodejs-scraper?label=version&color=blue)](CHANGELOG.md)
+[![Test Results](https://img.shields.io/badge/test--results-HTML-9b59b6)](https://sebiboga.github.io/smedix-nodejs-scraper/test-results/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![JavaScript](https://img.shields.io/badge/javascript-ESM-F7DF1E?logo=javascript&logoColor=black)](https://ecma-international.org/)
 [![Node.js](https://img.shields.io/badge/node-24-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fpeviitor.ro&label=peviitor.ro)](https://peviitor.ro)
 [![API](https://img.shields.io/website?url=https%3A%2F%2Fapi.peviitor.ro%2F&label=api.peviitor.ro)](https://api.peviitor.ro/)
 [![SOLR](https://img.shields.io/website?url=https%3A%2F%2Fsolr.peviitor.ro%2Fsolr%2F&label=solr.peviitor.ro)](https://solr.peviitor.ro/solr/)
-[![GitHub Pages](https://img.shields.io/github/deployments/sebiboga/epam-systems-international-srl-nodejs-scraper/github-pages?label=GitHub%20Pages)](https://sebiboga.github.io/epam-systems-international-srl-nodejs-scraper/)
+[![GitHub Pages](https://img.shields.io/github/deployments/sebiboga/smedix-nodejs-scraper/github-pages?label=GitHub%20Pages)](https://sebiboga.github.io/smedix-nodejs-scraper/)
 
-**job_seeker_ro_spider** — un scraper pentru job-urile EPAM Systems din România. Extrage anunțurile de pe [EPAM Careers Romania](https://careers.epam.com/en/jobs/romania) și le publică în [peviitor.ro](https://peviitor.ro) prin API-ul SOLR.
+**job_seeker_ro_spider** — un scraper pentru job-urile SMEDIX Systems din România. Extrage anunțurile de pe [Perficient Careers Romania](https://careers.perficient.com/en/jobs/romania) și le publică în [peviitor.ro](https://peviitor.ro) prin API-ul SOLR.
 
 > **📐 Template repository.** Acest repo este **referința** pentru toate scraper-ele Node.js din ecosistemul peviitor.ro. Toate scraper-ele noi pentru alte companii din România ar trebui derivate din acest pattern. Vezi [CONTRIBUTING.md](CONTRIBUTING.md) pentru pașii de derivare.
 >
@@ -35,11 +35,11 @@
 
 ## Overview
 
-Proiectul automatizează colectarea zilnică a job-urilor EPAM din România, menținând board-ul peviitor.ro la zi cu cele mai recente oportunități de carieră.
+Proiectul automatizează colectarea zilnică a job-urilor SMEDIX din România, menținând board-ul peviitor.ro la zi cu cele mai recente oportunități de carieră.
 
 ## Features
 
-- Extrage job-uri din API-ul public EPAM Careers Romania
+- Extrage job-uri din API-ul public Perficient Careers Romania
 - Validează compania via ANAF (CUI, status activ/inactiv, adresă completă)
 - **Cache ANAF la 7 zile** — committed în repo, nu lovește demoANAF la fiecare scrape
 - **Fallback la cache stale** dacă ANAF e indisponibil
@@ -79,7 +79,7 @@ Proiectul automatizează colectarea zilnică a job-urilor EPAM din România, men
 │   ├── integration/
 │   │   └── workflow.test.js    # Live ANAF + SOLR integration tests
 │   ├── e2e/
-│   │   └── scraper.test.js     # Full pipeline tests with real EPAM API
+│   │   └── scraper.test.js     # Full pipeline tests with real Perficient API
 │   └── consistency/
 │       ├── public.test.js      # Verifies repo is public
 │       ├── repo.test.js        # Verifies branch, Pages, secrets, workflows
@@ -155,20 +155,20 @@ npm run test:e2e
 The `job-seeker-ro-spider.yml` workflow runs daily at 6 AM UTC via GitHub Actions. It:
 1. Runs pre-scrape tests (unit + integration)
 2. Validates company data via ANAF
-3. Scrapes current job listings from EPAM Careers
+3. Scrapes current job listings from Perficient Careers
 4. Updates Solr with new/removed jobs
 5. Runs post-scrape tests (e2e + consistency)
 6. Uploads test results and job data as artifacts
-7. Generates [`docs/jobs.md`](https://sebiboga.github.io/epam-systems-international-srl-nodejs-scraper/jobs.md) with company info and all scraped jobs
-8. Pushes test reports and `docs/jobs.md` to [`docs/`](https://sebiboga.github.io/epam-systems-international-srl-nodejs-scraper/)
+7. Generates [`docs/jobs.md`](https://sebiboga.github.io/smedix-nodejs-scraper/jobs.md) with company info and all scraped jobs
+8. Pushes test reports and `docs/jobs.md` to [`docs/`](https://sebiboga.github.io/smedix-nodejs-scraper/)
 
 ### Test Automation
 
 The `automation-testing.yml` workflow runs on every push and pull request. It:
-1. Ensures EPAM exists in the company core
+1. Ensures SMEDIX exists in the company core
 2. Runs unit, integration, e2e, and consistency tests
 3. Validates data integrity in Solr
-4. Pushes test reports to [`docs/test-results/`](https://sebiboga.github.io/epam-systems-international-srl-nodejs-scraper/test-results/)
+4. Pushes test reports to [`docs/test-results/`](https://sebiboga.github.io/smedix-nodejs-scraper/test-results/)
 
 ## 🌱 Derived Scrapers
 
@@ -224,7 +224,7 @@ This project is managed by [ASOCIATIA OPORTUNITATI SI CARIERE](https://oportunit
 
 ## Robots.txt Policy
 
-Acest scraper respectă regulile din [robots.txt](https://careers.epam.com/robots.txt) al EPAM Careers. Pentru analiza completă, vezi [ROBOTS.md](ROBOTS.md).
+Acest scraper respectă regulile din [robots.txt](https://careers.perficient.com/robots.txt) al Perficient Careers. Pentru analiza completă, vezi [ROBOTS.md](ROBOTS.md).
 
 **Puncte cheie:**
 - API-ul `/api/*` este `Disallow` în robots.txt — scraper-ul îl folosește, dar cu rate limiting și un singur User-Agent identificabil (`job_seeker_ro_spider`)
@@ -234,4 +234,4 @@ Acest scraper respectă regulile din [robots.txt](https://careers.epam.com/robot
 
 ## Disclaimer
 
-This scraper is designed for educational purposes and legitimate job data aggregation for the Romanian job market. Please respect EPAM's Terms of Service and robots.txt when using this scraper.
+This scraper is designed for educational purposes and legitimate job data aggregation for the Romanian job market. Please respect Perficient's Terms of Service and robots.txt when using this scraper.

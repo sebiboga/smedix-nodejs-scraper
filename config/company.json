@@ -1,11 +1,11 @@
 {
-  "cif": "33159615",
-  "legalName": "EPAM SYSTEMS INTERNATIONAL SRL",
-  "brand": "EPAM",
-  "website": "https://www.epam.com",
-  "careerUrl": "https://careers.epam.com",
-  "apiBase": "https://careers.epam.com",
-  "apiCountryId": "8150000000000001155",
-  "defaultLocation": "București",
-  "scraperFile": "https://raw.githubusercontent.com/sebiboga/epam-systems-international-srl-nodejs-scraper/main/.github/workflows/job-seeker-ro-spider.yml"
+  "cif": "36734466",
+  "legalName": "SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA",
+  "brand": "SMEDIX",
+  "website": "https://www.perficient.com",
+  "careerUrl": "https://careers.perficient.com/en/sites/CX_1/jobs",
+  "apiBase": "https://fa-etqd-saasfaprod1.fa.ocs.oraclecloud.com/hcmRestApi",
+  "apiSiteNumber": "CX_1",
+  "defaultLocation": "Cluj-Napoca",
+  "scraperFile": "https://raw.githubusercontent.com/sebiboga/smedix-nodejs-scraper/main/.github/workflows/job-seeker-ro-spider.yml"
 }

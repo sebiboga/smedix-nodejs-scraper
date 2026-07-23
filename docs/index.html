@@ -248,19 +248,19 @@
       <img src="https://peviitor.ro/assets/logo-DV2JQkir.svg" alt="peviitor" class="logo-img">
     </a>
     <h1 data-i18n="pageTitle">Locuri de muncă</h1>
-    <p data-i18n="subtitle">Scraper automat pentru locurile de muncă EPAM Romania</p>
+    <p data-i18n="subtitle">Scraper automat pentru locurile de muncă SMEDIX Romania</p>
 
     <div style="margin: 15px 0; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
-      <a href="https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml" target="_blank">
-        <img src="https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml/badge.svg" alt="Scraper Status">
+      <a href="https://github.com/sebiboga/smedix-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml" target="_blank">
+        <img src="https://github.com/sebiboga/smedix-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml/badge.svg" alt="Scraper Status">
       </a>
-      <a href="https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/actions/workflows/automation-testing.yml" target="_blank">
-        <img src="https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/actions/workflows/automation-testing.yml/badge.svg" alt="Tests Status">
+      <a href="https://github.com/sebiboga/smedix-nodejs-scraper/actions/workflows/automation-testing.yml" target="_blank">
+        <img src="https://github.com/sebiboga/smedix-nodejs-scraper/actions/workflows/automation-testing.yml/badge.svg" alt="Tests Status">
       </a>
-      <a href="https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/blob/main/CHANGELOG.md" target="_blank">
-        <img src="https://img.shields.io/github/package-json/v/sebiboga/epam-systems-international-srl-nodejs-scraper?label=version&color=blue" alt="Version">
+      <a href="https://github.com/sebiboga/smedix-nodejs-scraper/blob/main/CHANGELOG.md" target="_blank">
+        <img src="https://img.shields.io/github/package-json/v/sebiboga/smedix-nodejs-scraper?label=version&color=blue" alt="Version">
       </a>
-      <a href="https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/blob/main/LICENSE" target="_blank">
+      <a href="https://github.com/sebiboga/smedix-nodejs-scraper/blob/main/LICENSE" target="_blank">
         <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
       </a>
       <a href="https://ecma-international.org/" target="_blank">
@@ -300,7 +300,7 @@
     <div class="card-header" data-i18n="aboutTitle">Despre acest scraper</div>
     <div class="card-body">
       <ul class="features-list" data-i18n="featuresList">
-        <li data-i18n="f1">Extrage job-uri de pe EPAM Careers API</li>
+        <li data-i18n="f1">Extrage job-uri de pe Perficient Oracle HCM Cloud API</li>
         <li data-i18n="f2">Parsează cu fetch (JSON API)</li>
         <li data-i18n="f3">Validează compania via ANAF</li>
         <li data-i18n="f4">Verifică și elimină job-uri expirate</li>
@@ -317,7 +317,7 @@
   </div>
 
   <div class="btn-wrapper" style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
-    <a class="btn" href="https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml" target="_blank">
+    <a class="btn" href="https://github.com/sebiboga/smedix-nodejs-scraper/actions/workflows/job-seeker-ro-spider.yml" target="_blank">
       <span>&#9654;</span> <span data-i18n="runBtn">Rulează Scraper</span>
     </a>
     <a class="btn" href="test-results/" style="background:#7d6b5a;">
@@ -337,8 +337,8 @@
   </div>
 
   <footer>
-    <a href="https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper" target="_blank">GitHub</a> &middot;
-    <a href="https://github.com/sebiboga/epam-systems-international-srl-nodejs-scraper/blob/main/docs/README.md" target="_blank" data-i18n="docs">Documentație</a> &middot;
+    <a href="https://github.com/sebiboga/smedix-nodejs-scraper" target="_blank">GitHub</a> &middot;
+    <a href="https://github.com/sebiboga/smedix-nodejs-scraper/blob/main/docs/README.md" target="_blank" data-i18n="docs">Documentație</a> &middot;
     <a href="https://peviitor.ro/" target="_blank">peviitor.ro</a>
   </footer>
 
@@ -346,8 +346,8 @@
 
 <script>
 // Loaded from docs/company.json (regenerated on every scrape)
-let COMPANY = "EPAM SYSTEMS INTERNATIONAL SRL";
-let COMPANY_CIF = "33159615";
+let COMPANY = "SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA";
+let COMPANY_CIF = "36734466";
 
 async function loadCompanyConfig() {
   try {
@@ -363,12 +363,12 @@ async function loadCompanyConfig() {
 
 const i18n = {
   en: {
-    pageTitle: "EPAM Jobs — peviitor.ro",
-    subtitle: "Automated scraper for EPAM Romania jobs",
+    pageTitle: "SMEDIX Jobs — peviitor.ro",
+    subtitle: "Automated scraper for SMEDIX Romania jobs",
     jobsLabel: "Jobs",
     verifiedLabel: "Verified",
     aboutTitle: "About this scraper",
-    f1: "Extracts jobs from EPAM Careers API",
+    f1: "Extracts jobs from Perficient Oracle HCM Cloud API",
     f2: "Parses with fetch (JSON API)",
     f3: "Validates company via ANAF",
     f4: "Checks and removes expired jobs",
@@ -383,11 +383,11 @@ const i18n = {
   },
   ro: {
     pageTitle: "Locuri de muncă — peviitor.ro",
-    subtitle: "Scraper automat pentru locurile de muncă EPAM Romania",
+    subtitle: "Scraper automat pentru locurile de muncă SMEDIX Romania",
     jobsLabel: "Locuri de muncă",
     verifiedLabel: "Verificate",
     aboutTitle: "Despre acest scraper",
-    f1: "Extrage locuri de muncă de pe EPAM Careers API",
+    f1: "Extrage locuri de muncă de pe Perficient Oracle HCM Cloud API",
     f2: "Parsează cu fetch (JSON API)",
     f3: "Validează compania via ANAF",
     f4: "Verifică și elimină locuri de muncă expirate",

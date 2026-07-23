@@ -49,15 +49,15 @@ function solrResponse(numFound, docs) {
   };
 }
 
-const EPAM_ANAF_RECORD = {
-  cui: 33159615,
-  name: 'EPAM SYSTEMS INTERNATIONAL SRL',
-  address: 'IANCU DE HUNEDOARA, 48, Bucureşti Sectorul 1, Bucureşti',
-  caenCode: '6220',
+const SMEDIX_ANAF_RECORD = {
+  cui: 36734466,
+  name: 'SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA',
+  address: 'Tăietura Turcului, 47, Municipiul Cluj-Napoca, Cluj',
+  caenCode: '6210',
   inactive: false,
   vatRegistered: true,
   eFacturaRegistered: false,
-  headquartersAddress: { locality: 'Bucureşti Sectorul 1' }
+  headquartersAddress: { locality: 'Municipiul Cluj-Napoca' }
 };
 
 describe('company.js', () => {
@@ -83,16 +83,16 @@ describe('company.js', () => {
   });
 
   describe('getCompanyData (no cache)', () => {
-    it('should fetch EPAM via direct CIF lookup and return company data', async () => {
-      mockFetch.mockResolvedValueOnce(anafCompanyResponse(EPAM_ANAF_RECORD));
+    it('should fetch SMEDIX via direct CIF lookup and return company data', async () => {
+      mockFetch.mockResolvedValueOnce(anafCompanyResponse(SMEDIX_ANAF_RECORD));
 
       const result = await company.getCompanyData();
 
-      expect(result).toHaveProperty('company', 'EPAM SYSTEMS INTERNATIONAL SRL');
-      expect(result).toHaveProperty('cif', '33159615');
+      expect(result).toHaveProperty('company', 'SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA');
+      expect(result).toHaveProperty('cif', '36734466');
       expect(result).toHaveProperty('active', true);
       expect(result).toHaveProperty('anafData');
-      expect(result.anafData.name).toBe('EPAM SYSTEMS INTERNATIONAL SRL');
+      expect(result.anafData.name).toBe('SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA');
     });
 
     it('should throw when ANAF returns no data', async () => {
@@ -102,7 +102,7 @@ describe('company.js', () => {
     });
 
     it('should throw when ANAF returns no company name', async () => {
-      mockFetch.mockResolvedValueOnce(anafCompanyResponse({ cui: 33159615, name: null }));
+      mockFetch.mockResolvedValueOnce(anafCompanyResponse({ cui: 36734466, name: null }));
 
       await expect(company.getCompanyData()).rejects.toThrow('ANAF returned no company name');
     });
@@ -111,10 +111,10 @@ describe('company.js', () => {
   describe('getCompanyData (with cache)', () => {
     const cachedData = {
       validatedAt: new Date().toISOString(),
-      anaf: EPAM_ANAF_RECORD,
+      anaf: SMEDIX_ANAF_RECORD,
       summary: {
-        company: 'EPAM SYSTEMS INTERNATIONAL SRL',
-        cif: '33159615',
+        company: 'SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA',
+        cif: '36734466',
         active: true
       }
     };
@@ -126,8 +126,8 @@ describe('company.js', () => {
     it('should use cached company data when available', async () => {
       const result = await company.getCompanyData();
 
-      expect(result.company).toBe('EPAM SYSTEMS INTERNATIONAL SRL');
-      expect(result.cif).toBe('33159615');
+      expect(result.company).toBe('SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA');
+      expect(result.cif).toBe('36734466');
       expect(result.active).toBe(true);
       expect(mockFetch).not.toHaveBeenCalled();
     });
@@ -140,35 +140,20 @@ describe('company.js', () => {
 
     it('should return company data with status active', async () => {
       mockFetch
-        .mockResolvedValueOnce(anafCompanyResponse(EPAM_ANAF_RECORD))
+        .mockResolvedValueOnce(anafCompanyResponse(SMEDIX_ANAF_RECORD))
         .mockResolvedValueOnce(solrResponse(5, [
           { url: 'https://test.com/1', title: 'Job 1' },
           { url: 'https://test.com/2', title: 'Job 2' }
         ]))
-        .mockResolvedValueOnce(peviitorResponse([{ company: 'EPAM SYSTEMS INTERNATIONAL SRL' }]));
+        .mockResolvedValueOnce(peviitorResponse([{ company: 'SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA' }]));
 
       const result = await company.validateAndGetCompany();
 
       expect(result).toHaveProperty('status', 'active');
-      expect(result).toHaveProperty('company', 'EPAM SYSTEMS INTERNATIONAL SRL');
-      expect(result).toHaveProperty('cif', '33159615');
+      expect(result).toHaveProperty('company', 'SMEDIX LLC ST. LOUIS SUCURSALA CLUJ NAPOCA');
+      expect(result).toHaveProperty('cif', '36734466');
       expect(result).toHaveProperty('existingJobsCount');
       expect(typeof result.existingJobsCount).toBe('number');
     });
-
-    // Epam e activă — testul inactive se rulează doar dacă firma e inactivă
-    if (EPAM_ANAF_RECORD.inactive) {
-      it('should return inactive status when company is inactive', async () => {
-        const inactiveRecord = { ...EPAM_ANAF_RECORD, inactive: true };
-
-        mockFetch
-          .mockResolvedValueOnce(anafCompanyResponse(inactiveRecord))
-          .mockResolvedValueOnce(solrResponse(0, []));
-
-        const result = await company.validateAndGetCompany();
-
-        expect(result).toHaveProperty('status', 'inactive');
-      });
-    }
   });
 });
