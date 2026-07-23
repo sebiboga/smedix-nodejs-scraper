@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Results - EPAM Scraper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Inter", sans-serif;
+      background: #fdf6f0;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fffcf9;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 24px rgba(90, 60, 40, 0.10);
+    }
+    h1 {
+      color: #2d2a24;
+      margin-bottom: 10px;
+      font-size: 1.8em;
+    }
+    p {
+      color: #7d6b5a;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .reports {
+      list-style: none;
+    }
+    .reports li {
+      padding: 15px;
+      border-bottom: 1px solid #f0e4d8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .reports li:last-child {
+      border-bottom: none;
+    }
+    .report-type {
+      font-weight: 600;
+      color: #c44536;
+      font-size: 1em;
+    }
+    .report-meta {
+      color: #9a8a7a;
+      font-size: 0.85em;
+    }
+    .btn {
+      background: #c44536;
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 10px;
+      font-size: 0.85em;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background: #7d6b5a;
+    }
+    .empty {
+      color: #9a8a7a;
+      text-align: center;
+      padding: 40px;
+      font-style: italic;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #c44536;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Rapoarte Teste</h1>
+    <p>Rezultatele testelor automate pentru scraper-ul EPAM Systems.</p>
+    <ul class="reports" id="reportList">
+      <li class="empty">Se încarcă...</li>
+    </ul>
+    <a class="back-link" href="../">← Înapoi la pagina principală</a>
+  </div>
+
+  <script>
+    const REPORTS = [
+      { file: 'pre-scrape-unit.html',      label: 'Pre-scrape: Unit Tests',       desc: 'Rulează înainte de scraping — teste unitare' },
+      { file: 'pre-scrape-integration.html', label: 'Pre-scrape: Integration Tests', desc: 'Rulează înainte de scraping — teste de integrare' },
+      { file: 'post-scrape.html',          label: 'Post-scrape: E2E Tests',       desc: 'Rulează după scraping — teste end-to-end' },
+      { file: 'post-scrape-consistency.html', label: 'Post-scrape: Consistency Tests', desc: 'Rulează după scraping — teste de consistență repo' }
+    ];
+
+    async function load() {
+      const list = document.getElementById('reportList');
+      list.innerHTML = '';
+
+      let hasAny = false;
+      for (const report of REPORTS) {
+        try {
+          const res = await fetch(report.file);
+          if (res.ok) {
+            hasAny = true;
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <div>
+                <div class="report-type">${report.label}</div>
+                <div class="report-meta">${report.desc}</div>
+              </div>
+              <a class="btn" href="${report.file}" target="_blank">Vezi Raport</a>
+            `;
+            list.appendChild(li);
+          }
+        } catch(e) {}
+      }
+
+      if (!hasAny) {
+        list.innerHTML = '<li class="empty">Niciun raport disponibil încă. Testele rulează automat la fiecare scraping.</li>';
+      }
+    }
+    load();
+  </script>
+</body>
+</html>

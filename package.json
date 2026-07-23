@@ -1,0 +1,30 @@
+{
+  "name": "scraper-epam-ro",
+  "version": "1.5.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "scrape": "node --no-deprecation index.js",
+    "test": "node --no-deprecation --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:unit": "node --no-deprecation --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=unit",
+    "test:integration": "node --no-deprecation --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=integration",
+    "test:e2e": "node --no-deprecation --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=e2e",
+    "test:consistency": "node --no-deprecation --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=consistency"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-html-reporter": "^3.5.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "verbose": true,
+    "reporters": ["default", "jest-html-reporter"],
+    "testTimeout": 30000
+  }
+}
