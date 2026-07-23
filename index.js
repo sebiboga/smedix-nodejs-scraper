@@ -104,8 +104,8 @@ async function fetchJobsPage(offset) {
     timeout: TIMEOUT,
     headers: {
       "User-Agent": "job_seeker_ro_spider",
-      "Accept": "application/vnd.oracle.adf.resourceitem+json;charset=utf-8",
-      "Content-Type": "application/vnd.oracle.adf.resourceitem+json;charset=utf-8",
+      "Accept": "application/json",
+      "Content-Type": "application/json",
       "ora-irc-language": "en"
     }
   });
