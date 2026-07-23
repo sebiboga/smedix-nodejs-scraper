@@ -14,7 +14,7 @@ function repoUrl(apiPath) {
 }
 
 async function ghFetch(url) {
-  const headers = { Accept: "application/vnd.github.v3+json", User-Agent: "jest-test" };
+  const headers = { Accept: "application/vnd.github.v3+json", "User-Agent": "jest-test" };
   if (TOKEN) headers.Authorization = `token ${TOKEN}`;
   const res = await fetch(url, { headers });
   return res;
