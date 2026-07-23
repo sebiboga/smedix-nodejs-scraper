@@ -12,7 +12,7 @@ const baseCompany = {
 };
 
 const baseJob = {
-  url: "https://careers.epam.com/en/vacancy/123_en",
+  url: "https://careers.perficient.com/en/sites/CX_1/job/123",
   title: "Senior Node.js Developer",
   workmode: "hybrid",
   location: ["București"],
@@ -44,17 +44,17 @@ describe("generateJobsMarkdown", () => {
 
     it("includes website as markdown link", () => {
       const md = generateJobsMarkdown(baseCompany, []);
-      expect(md).toContain("[https://www.epam.com](https://www.epam.com)");
+      expect(md).toContain("[https://www.perficient.com](https://www.perficient.com)");
     });
 
     it("includes career page as markdown link", () => {
       const md = generateJobsMarkdown(baseCompany, []);
-      expect(md).toContain("[https://careers.epam.com](https://careers.epam.com)");
+      expect(md).toContain("[https://careers.perficient.com](https://careers.perficient.com)");
     });
 
     it("includes lastScraped date", () => {
       const md = generateJobsMarkdown(baseCompany, []);
-      expect(md).toContain("2026-06-17");
+      expect(md).toContain("2026-07-23");
     });
 
     it("omits optional fields when not present", () => {
@@ -84,7 +84,7 @@ describe("generateJobsMarkdown", () => {
 
     it("includes job URL as markdown link", () => {
       const md = generateJobsMarkdown(baseCompany, [baseJob]);
-      expect(md).toContain("[https://careers.epam.com/en/vacancy/123_en]");
+      expect(md).toContain("[https://careers.perficient.com/en/sites/CX_1/job/123]");
     });
 
     it("includes workmode", () => {
@@ -108,7 +108,7 @@ describe("generateJobsMarkdown", () => {
     });
 
     it("renders multiple jobs", () => {
-      const job2 = { ...baseJob, title: "DevOps Engineer", url: "https://careers.epam.com/en/vacancy/456_en" };
+      const job2 = { ...baseJob, title: "DevOps Engineer", url: "https://careers.perficient.com/en/sites/CX_1/job/456" };
       const md = generateJobsMarkdown(baseCompany, [baseJob, job2]);
       expect(md).toContain("### Senior Node.js Developer");
       expect(md).toContain("### DevOps Engineer");
@@ -116,7 +116,7 @@ describe("generateJobsMarkdown", () => {
     });
 
     it("handles job with no optional fields", () => {
-      const minimal = { url: "https://careers.epam.com/en/vacancy/999_en", title: "QA Engineer" };
+      const minimal = { url: "https://careers.perficient.com/en/sites/CX_1/job/999", title: "QA Engineer" };
       const md = generateJobsMarkdown(baseCompany, [minimal]);
       expect(md).toContain("### QA Engineer");
       expect(md).not.toContain("Work Mode");
